@@ -98,8 +98,8 @@ test_that("wflow_remove removes a published Rmd file and its associated files", 
   expect_false(any(file.exists(rmd_published, data_published),
                    dir.exists(c(cache_published, fig_docs_published))))
   commit_latest <- commits(r)[[1]]
-  expect_identical(actual$commit@sha, commit_latest@sha)
-  expect_identical(commit_latest@message,
+  expect_identical(actual$commit$sha, commit_latest$sha)
+  expect_identical(commit_latest$message,
                    "wflow_remove(c(rmd_published, data_published))")
   # Confirm the files were removed from the Git directory
   files_committed <- workflowr:::get_committed_files(r)

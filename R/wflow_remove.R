@@ -218,7 +218,7 @@ print.wflow_remove <- function(x, ...) {
     } else {
       cat("\n", wrap(sprintf(
         "The following was removed from the Git repo in commit %s:",
-        stringr::str_sub(x$commit@sha, start = 1, end = 7))), "\n\n", sep = "")
+        stringr::str_sub(x$commit$sha, start = 1, end = 7))), "\n\n", sep = "")
     }
     cat(x$files_git, sep = "\n")
     cat("\ncommit message:\n")

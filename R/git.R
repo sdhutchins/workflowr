@@ -98,7 +98,7 @@ get_committed_files <- function(repo, commit = NULL) {
     return(NA)
   }
   if (is.null(commit)) {
-    commit <- git2r::lookup(repo, git2r::branch_target(git2r::head(repo)))
+    commit <- git2r::lookup(repo, git2r::branch_target(git2r::repository_head(repo)))
   }
   tree <- git2r::tree(commit)
   files <- ls_files(tree)
@@ -194,10 +194,10 @@ obtain_files_in_commit <- function(repo, commit) {
   } else if (length(parent_commit) == 1) {
     git_diff <- git2r::diff(git2r::tree(commit),
                             git2r::tree(parent_commit[[1]]))
-    files <- sapply(git_diff@files, function(x) x@new_file)
+    files <- sapply(git_diff$files, function(x) x$new_file)
   } else {
     stop(sprintf("Cannot perform diff on commit %s because it has %d parents",
-                 commit@sha, length(parent_commit)))
+                 commit$sha, length(parent_commit)))
   }
 
   files <- absolute(paste0(git2r::workdir(repo), files))
@@ -315,13 +315,13 @@ check_remote <- function(remote, remote_avail) {
 # Returns a list of length two.
 determine_remote_and_branch <- function(repo, remote, branch) {
   stopifnot(class(repo) == "git_repository")
-  git_head <- git2r::head(repo)
+  git_head <- git2r::repository_head(repo)
   tracking <- git2r::branch_get_upstream(git_head)
   # If both remote and branch are NULL and the current branch is tracking a
   # remote branch, use this remote and branch.
   if (is.null(remote) && is.null(branch) && !is.null(tracking)) {
     remote <- git2r::branch_remote_name(tracking)
-    branch <- stringr::str_split_fixed(tracking@name, "/", n = 2)[, 2]
+    branch <- stringr::str_split_fixed(tracking$name, "/", n = 2)[, 2]
   }
   # If remote is NULL, take an educated guess at what the user would want.
   if (is.null(remote)) {
@@ -329,7 +329,7 @@ determine_remote_and_branch <- function(repo, remote, branch) {
   }
   # If branch is NULL, use the same name as the current branch.
   if (is.null(branch)) {
-    branch <- git_head@name
+    branch <- git_head$name
   }
 
   return(list(remote = remote, branch = branch))

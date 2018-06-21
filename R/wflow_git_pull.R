@@ -104,7 +104,7 @@ wflow_git_pull <- function(remote = NULL, branch = NULL, username = NULL,
   # Must be using Git
   p <- wflow_paths(error_git = TRUE, project = project)
   r <- git2r::repository(path = p$git)
-  git_head <- git2r::head(r)
+  git_head <- git2r::repository_head(r)
   remote_avail <- wflow_git_remote(verbose = FALSE, project = project)
 
   # Fail early if HEAD does not point to a branch
@@ -120,7 +120,7 @@ wflow_git_pull <- function(remote = NULL, branch = NULL, username = NULL,
   branch <- remote_and_branch$branch
 
   # Send warning if the remote branch is not the same one as local branch (HEAD)
-  warn_branch_mismatch(remote_branch = branch, local_branch = git_head@name)
+  warn_branch_mismatch(remote_branch = branch, local_branch = git_head$name)
 
   # Obtain authentication ------------------------------------------------------
 
@@ -204,23 +204,23 @@ print.wflow_git_pull <- function(x, ...) {
   cat("\n")
 
   if (!is.null(x$merge_result)) {
-    if (x$merge_result@up_to_date) {
+    if (x$merge_result$up_to_date) {
       cat("\n", wrap(
         "No changes were made because your local and remote repositories are
         in sync."
         ), "\n", sep = "")
-    } else if (x$merge_result@fast_forward && length(x$merge_result@sha) == 0) {
+    } else if (x$merge_result$fast_forward && length(x$merge_result$sha) == 0) {
       cat("\n", wrap(
         "The latest changes in the remote repository were successfully pulled
         into your local repository."
       ), "\n", sep = "")
-    } else if (x$merge_result@fast_forward) {
+    } else if (x$merge_result$fast_forward) {
       cat("\n", wrap(sprintf(
         "The latest changes in the remote repository were successfully pulled
         into your local repository. To combine the changes that differed
         between the two repositories, the merge commit %s was created.",
-      x$merge_result@sha)), "\n", sep = "")
-    } else if (x$merge_result@conflicts) {
+      x$merge_result$sha)), "\n", sep = "")
+    } else if (x$merge_result$conflicts) {
       cat("\n", wrap(
         "There were conflicts that Git could not resolve automatically when
         trying to pull changes from the remote repository. You will need to

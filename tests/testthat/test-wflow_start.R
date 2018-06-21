@@ -441,10 +441,10 @@ test_that("print.wflow_start works with change_wd = FALSE", {
   expect_identical(p_actual_run[4],
                    paste("- Working directory continues to be", getwd()))
   expect_identical(p_actual_run[5],
-                   paste("- Git repo initiated at", r@path))
+                   paste("- Git repo initiated at", r$path))
   expect_identical(p_actual_run[6],
                    paste("- Files were committed in version",
-                         workflowr:::shorten_sha(git2r::branch_target(git2r::head(r)))))
+                         workflowr:::shorten_sha(git2r::branch_target(git2r::repository_head(r)))))
 })
 
 test_that("print.wflow_start works with change_wd = FALSE and git = FALSE", {
@@ -513,10 +513,10 @@ test_that("print.wflow_start works with change_wd = FALSE and existing = TRUE", 
   expect_identical(p_actual_run[4],
                    paste("- Working directory continues to be", getwd()))
   expect_identical(p_actual_run[5],
-                   paste("- Git repo initiated at", r@path))
+                   paste("- Git repo initiated at", r$path))
   expect_identical(p_actual_run[6],
                    paste("- Files were committed in version",
-                         workflowr:::shorten_sha(git2r::branch_target(git2r::head(r)))))
+                         workflowr:::shorten_sha(git2r::branch_target(git2r::repository_head(r)))))
 })
 
 test_that("print.wflow_start works with existing Git repo", {
@@ -543,7 +543,7 @@ test_that("print.wflow_start works with existing Git repo", {
   expect_identical(p_dry_run[4],
                    paste("- Working directory will continue to be", getwd()))
   expect_identical(p_dry_run[5],
-                   paste("- Git repo already present at", r@path))
+                   paste("- Git repo already present at", r$path))
   expect_identical(p_dry_run[6], "- Files will be commited with Git")
 
   # Actual run
@@ -558,10 +558,10 @@ test_that("print.wflow_start works with existing Git repo", {
   expect_identical(p_actual_run[4],
                    paste("- Working directory continues to be", getwd()))
   expect_identical(p_actual_run[5],
-                   paste("- Git repo already present at", r@path))
+                   paste("- Git repo already present at", r$path))
   expect_identical(p_actual_run[6],
                    paste("- Files were committed in version",
-                         workflowr:::shorten_sha(git2r::branch_target(git2r::head(r)))))
+                         workflowr:::shorten_sha(git2r::branch_target(git2r::repository_head(r)))))
 })
 
 test_that("print.wflow_start works with change_wd = TRUE", {
@@ -599,8 +599,8 @@ test_that("print.wflow_start works with change_wd = TRUE", {
   expect_identical(p_actual_run[4],
                    paste("- Working directory changed to", tmp_dir))
   expect_identical(p_actual_run[5],
-                   paste("- Git repo initiated at", r@path))
+                   paste("- Git repo initiated at", r$path))
   expect_identical(p_actual_run[6],
                    paste("- Files were committed in version",
-                         workflowr:::shorten_sha(git2r::branch_target(git2r::head(r)))))
+                         workflowr:::shorten_sha(git2r::branch_target(git2r::repository_head(r)))))
 })

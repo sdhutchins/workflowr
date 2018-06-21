@@ -109,7 +109,7 @@ wflow_git_push <- function(remote = NULL, branch = NULL,
   # Must be using Git
   p <- wflow_paths(error_git = TRUE, project = project)
   r <- git2r::repository(path = p$git)
-  git_head <- git2r::head(r)
+  git_head <- git2r::repository_head(r)
   remote_avail <- wflow_git_remote(verbose = FALSE, project = project)
 
   # Fail early if HEAD does not point to a branch
@@ -125,7 +125,7 @@ wflow_git_push <- function(remote = NULL, branch = NULL,
   branch <- remote_and_branch$branch
 
   # Send warning if the remote branch is not the same one as local branch (HEAD)
-  warn_branch_mismatch(remote_branch = branch, local_branch = git_head@name)
+  warn_branch_mismatch(remote_branch = branch, local_branch = git_head$name)
 
   # Obtain authentication ------------------------------------------------------
 

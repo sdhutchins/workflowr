@@ -92,7 +92,7 @@ get_versions <- function(input, output_dir, blobs, r, github) {
                       c("ext", "commit", "author", "when")]
   # Ignore blobs that don't map to commits (caused by `git commit --amend`)
   git_log <- git2r::commits(r)
-  git_log_sha <- vapply(git_log, function(x) x@sha, character(1))
+  git_log_sha <- vapply(git_log, function(x) x$sha, character(1))
   blobs_file <- blobs_file[blobs_file$commit %in% git_log_sha, ]
   # Exit early if there are no past versions
   if (nrow(blobs_file) == 0) {
@@ -169,7 +169,7 @@ get_versions_fig <- function(fig, r, github) {
   blobs_file <- blobs[blobs$fname_abs == fig, ]
   # Ignore blobs that don't map to commits (caused by `git commit --amend`)
   git_log <- git2r::commits(r)
-  git_log_sha <- vapply(git_log, function(x) x@sha, character(1))
+  git_log_sha <- vapply(git_log, function(x) x$sha, character(1))
   blobs_file <- blobs_file[blobs_file$commit %in% git_log_sha, ]
 
   # Exit early if there are no past versions
@@ -225,7 +225,7 @@ get_versions_fig <- function(fig, r, github) {
 
 
 get_commit_title <- function(x, r) {
-  full <- git2r::lookup(r, x)@message
+  full <- git2r::lookup(r, x)$message
   title <- stringr::str_split(full, "\n")[[1]][1]
   return(title)
 }
@@ -235,7 +235,7 @@ check_vc <- function(input, r, s, github) {
    pass <- TRUE
    log <- git2r::commits(r)
    if (length(log) > 0) {
-     sha <- log[[1]]@sha
+     sha <- log[[1]]$sha
      sha7 <- shorten_sha(sha)
      if (!is.na(github)) {
        sha_display <- sprintf("<a href=\"%s/tree/%s\" target=\"_blank\">%s</a>",
