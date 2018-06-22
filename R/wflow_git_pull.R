@@ -53,8 +53,9 @@
 #'
 #' \item \bold{username}: GitHub username.
 #'
-#' \item \bold{merge_result}: The \code{\link[git2r]{git_merge_result-class}}
-#' object returned by \link{git2r} (only included if \code{dry_run == FALSE}).
+#' \item \bold{merge_result}: The list returned by
+#' \link{git2r}::\code{\link[git2r]{merge}} (only included if \code{dry_run ==
+#' FALSE}).
 #'
 #' \item \bold{dry_run}: The input argument \code{dry_run}.
 #'
@@ -171,7 +172,7 @@ wflow_git_pull <- function(remote = NULL, branch = NULL, username = NULL,
                stop(wrap(reason), call. = FALSE)
              }
     )
-    merge_result <- git2r::merge(r, paste(remote, branch, sep = "/"))
+    merge_result <- base::merge(r, paste(remote, branch, sep = "/"))
   } else {
     merge_result <- NULL
   }
