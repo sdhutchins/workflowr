@@ -11,3 +11,4 @@ docs/articles/*R
 workflowr_*
 workflowr.Rcheck
 inst/code/*.o
+inst/code/git_log
