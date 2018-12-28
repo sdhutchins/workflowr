@@ -34,12 +34,12 @@
 
 /** log_state represents walker being configured while handling options */
 struct log_state {
-	git_repository *repo;
-	const char *repodir;
-	git_revwalk *walker;
-	int hide;
-	int sorting;
-	int revisions;
+  git_repository *repo;
+  const char *repodir;
+  git_revwalk *walker;
+  int hide;
+  int sorting;
+  int revisions;
 };
 
 /** utility functions that are called to configure the walker */
@@ -49,7 +49,6 @@ static int add_revision(struct log_state *s, const char *revstr);
 
 /** log_options holds other command line options that affect log output */
 struct log_options {
-  int show_diff;
   int show_log_size;
   int skip, limit;
   int min_parents, max_parents;
@@ -61,8 +60,7 @@ struct log_options {
 };
 
 /** utility functions that parse options and help with log output */
-static int parse_options(
-	struct log_state *s, struct log_options *opt, int argc, char **argv);
+static void init_options(struct log_state *s, struct log_options *opt);
 static void print_time(const git_time *intime, const char *prefix);
 static void print_commit(git_commit *commit, struct log_options *opts);
 static int match_with_parent(git_commit *commit, int i, git_diff_options *);
@@ -72,7 +70,7 @@ static int signature_matches(const git_signature *sig, const char *filter);
 static int log_message_matches(const git_commit *commit, const char *filter);
 
 int main(int argc, char *argv[]) {
-  int i, count = 0, printed = 0, parents, last_arg;
+  int i, count = 0, printed = 0, parents;
   struct log_state s;
   struct log_options opt;
   git_diff_options diffopts = GIT_DIFF_OPTIONS_INIT;
@@ -84,14 +82,12 @@ int main(int argc, char *argv[]) {
   
   /** Parse arguments and set up revwalker. */
   
-  last_arg = parse_options(&s, &opt, argc, argv);
-  
-  diffopts.pathspec.strings = &argv[last_arg];
-  diffopts.pathspec.count	  = argc - last_arg;
-  if (diffopts.pathspec.count > 0)
-    check_lg2(git_pathspec_new(&ps, &diffopts.pathspec),
-	      "Building pathspec", NULL);
-  
+  init_options(&s,&opt);
+  diffopts.pathspec.strings = &argv[1];
+  diffopts.pathspec.count   = 1;
+  check_lg2(git_pathspec_new(&ps, &diffopts.pathspec),
+	    "Building pathspec", NULL);
+
   if (!s.revisions)
     add_revision(&s, NULL);
   
@@ -149,31 +145,7 @@ int main(int argc, char *argv[]) {
     }
     
     print_commit(commit, &opt);
-    
-    if (opt.show_diff) {
-      git_tree *a = NULL, *b = NULL;
-      git_diff *diff = NULL;
-      
-      if (parents > 1)
-	continue;
-      check_lg2(git_commit_tree(&b, commit), "Get tree", NULL);
-      if (parents == 1) {
-	git_commit *parent;
-	check_lg2(git_commit_parent(&parent, commit, 0), "Get parent", NULL);
-	check_lg2(git_commit_tree(&a, parent), "Tree for parent", NULL);
-	git_commit_free(parent);
-      }
-      
-      check_lg2(git_diff_tree_to_tree(&diff,git_commit_owner(commit),a,b,
-				      &diffopts),
-		"Diff commit with parent",NULL);
-      check_lg2(git_diff_print(diff,GIT_DIFF_FORMAT_PATCH,diff_output,NULL),
-		"Displaying diff", NULL);
-      
-      git_diff_free(diff);
-      git_tree_free(a);
-      git_tree_free(b);
-    }
+  
   }
   
   git_pathspec_free(ps);
@@ -342,10 +314,6 @@ static void print_commit(git_commit *commit, struct log_options *opts) {
   git_oid_tostr(buf, sizeof(buf), git_commit_id(commit));
   printf("commit %s\n", buf);
   
-  if (opts->show_log_size) {
-    printf("log size %d\n", (int)strlen(git_commit_message(commit)));
-  }
-  
   if ((count = (int)git_commit_parentcount(commit)) > 1) {
     printf("Merge:");
     for (i = 0; i < count; ++i) {
@@ -404,10 +372,8 @@ static void usage(const char *message, const char *arg) {
   exit(1);
 }
 
-/** Parse some log command line options. */
-static int parse_options(struct log_state *s, struct log_options *opt,
-			 int argc, char **argv) {
-  struct args_info args = ARGS_INFO_INIT;
+/** Initialize the log options. */
+static void init_options(struct log_state *s, struct log_options *opt) {
   
   memset(s, 0, sizeof(*s));
   s->sorting = GIT_SORT_TIME;
@@ -415,62 +381,4 @@ static int parse_options(struct log_state *s, struct log_options *opt,
   memset(opt, 0, sizeof(*opt));
   opt->max_parents = -1;
   opt->limit = -1;
-  
-  for (args.pos = 1; args.pos < argc; ++args.pos) {
-    const char *a = argv[args.pos];
-    
-    if (a[0] != '-') {
-      if (!add_revision(s, a))
-	s->revisions++;
-      else
-	
-	/** Try failed revision parse as filename. */
-	break;
-    } else if (!strcmp(a, "--")) {
-      ++args.pos;
-      break;
-    }
-    else if (!strcmp(a, "--date-order"))
-      set_sorting(s, GIT_SORT_TIME);
-    else if (!strcmp(a, "--topo-order"))
-      set_sorting(s, GIT_SORT_TOPOLOGICAL);
-    else if (!strcmp(a, "--reverse"))
-      set_sorting(s, GIT_SORT_REVERSE);
-    else if (match_str_arg(&opt->author, &args, "--author"))
-      /** Found valid --author */;
-    else if (match_str_arg(&opt->committer, &args, "--committer"))
-      /** Found valid --committer */;
-    else if (match_str_arg(&opt->grep, &args, "--grep"))
-      /** Found valid --grep */;
-    else if (match_str_arg(&s->repodir, &args, "--git-dir"))
-      /** Found git-dir. */;
-    else if (match_int_arg(&opt->skip, &args, "--skip", 0))
-      /** Found valid --skip. */;
-    else if (match_int_arg(&opt->limit, &args, "--max-count", 0))
-      /** Found valid --max-count. */;
-    else if (a[1] >= '0' && a[1] <= '9')
-      is_integer(&opt->limit, a + 1, 0);
-    else if (match_int_arg(&opt->limit, &args, "-n", 0))
-      /** Found valid -n. */;
-    else if (!strcmp(a, "--merges"))
-      opt->min_parents = 2;
-    else if (!strcmp(a, "--no-merges"))
-      opt->max_parents = 1;
-    else if (!strcmp(a, "--no-min-parents"))
-      opt->min_parents = 0;
-    else if (!strcmp(a, "--no-max-parents"))
-      opt->max_parents = -1;
-    else if (match_int_arg(&opt->max_parents, &args, "--max-parents=", 1))
-      /** Found valid --max-parents. */;
-    else if (match_int_arg(&opt->min_parents, &args, "--min-parents=", 0))
-      /** Found valid --min_parents. */;
-    else if (!strcmp(a, "-p") || !strcmp(a, "-u") || !strcmp(a, "--patch"))
-      opt->show_diff = 1;
-    else if (!strcmp(a, "--log-size"))
-      opt->show_log_size = 1;
-    else
-      usage("Unsupported argument", a);
-  }
-  
-  return args.pos;
 }
