@@ -10,3 +10,4 @@ vignettes/*html
 docs/articles/*R
 workflowr_*
 workflowr.Rcheck
+inst/code/*.o
