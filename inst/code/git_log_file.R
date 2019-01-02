@@ -6,7 +6,7 @@ git_log_file <- function(file) {
                         file.path(blobs$path, blobs$name))
   blobs$fname_abs <- file.path(workflowr:::git2r_workdir(r), blobs$fname)
   blobs_file <- blobs[blobs$fname_abs == file,]
-  
+
   # Ignore blobs that don't map to commits (caused by `git commit --amend`)
   git_log <- git2r::commits(r)
   git_log_sha <-
